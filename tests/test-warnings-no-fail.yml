@@ -1,0 +1,24 @@
+name: Test warnings with fail_on_error false
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          github_token: dummy-token
+          reporter: local
+          filter_mode: nofilter
+          fail_on_error: 'false'
+          level: warning
+          path: pristine/nnichols--clojure-lint-action/v10/tests/fixtures/src/dirty
+      - name: Assert action did not fail despite warnings
+        run: |
+          echo "Action completed without failing even though there are lint warnings"
+          echo "PASS"
