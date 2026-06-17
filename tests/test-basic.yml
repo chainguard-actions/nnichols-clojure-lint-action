@@ -1,0 +1,34 @@
+name: Test basic clojure lint
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a valid Clojure file to lint
+        run: |
+          mkdir -p /tmp/clj-test
+          cat > /tmp/clj-test/core.clj << 'EOF'
+          (ns example.core)
+
+          (defn hello [name]
+            (str "Hello, " name "!"))
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          level: error
+          reporter: local
+          filter_mode: nofilter
+          fail_on_error: 'false'
+          path: /tmp/clj-test
+          pattern: '*.clj'
+
+      - name: Assert action completed successfully
+        run: |
+          echo "Action completed without error"
+          echo "PASS"

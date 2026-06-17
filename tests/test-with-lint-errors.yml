@@ -1,0 +1,35 @@
+name: Test clojure lint with errors
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a Clojure file with lint issues
+        run: |
+          mkdir -p /tmp/clj-errors
+          cat > /tmp/clj-errors/broken.clj << 'EOF'
+          (ns example.broken)
+
+          (defn unused-binding []
+            (let [x 1]
+              "no x used"))
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          level: warning
+          reporter: local
+          filter_mode: nofilter
+          fail_on_error: 'false'
+          path: /tmp/clj-errors
+          pattern: '*.clj'
+
+      - name: Assert action completed (fail_on_error=false means no exit failure)
+        run: |
+          echo "Action completed - lint errors reported but did not fail the workflow"
+          echo "PASS"

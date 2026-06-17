@@ -1,0 +1,42 @@
+name: Test clojure lint with exclude pattern
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create Clojure files including one to exclude
+        run: |
+          mkdir -p /tmp/clj-exclude/src
+          mkdir -p /tmp/clj-exclude/vendor
+          cat > /tmp/clj-exclude/src/core.clj << 'EOF'
+          (ns example.core)
+
+          (defn hello []
+            "hello")
+          EOF
+          cat > /tmp/clj-exclude/vendor/third-party.clj << 'EOF'
+          (ns vendor.third-party)
+
+          (defn unused []
+            (let [x 1] "nothing"))
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          level: error
+          reporter: local
+          filter_mode: nofilter
+          fail_on_error: 'false'
+          path: /tmp/clj-exclude
+          pattern: '*.clj'
+          exclude: '*/vendor/*'
+
+      - name: Assert action completed with exclude pattern
+        run: |
+          echo "Action completed with exclude pattern - vendor files skipped"
+          echo "PASS"

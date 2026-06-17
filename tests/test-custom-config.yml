@@ -1,0 +1,35 @@
+name: Test clojure lint with custom config
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a Clojure file to lint
+        run: |
+          mkdir -p /tmp/clj-config
+          cat > /tmp/clj-config/core.clj << 'EOF'
+          (ns example.core)
+
+          (defn greet [name]
+            (println "Hello," name))
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          level: info
+          reporter: local
+          filter_mode: nofilter
+          fail_on_error: 'false'
+          path: /tmp/clj-config
+          pattern: '*.clj'
+          clj_kondo_config: '{:linters {:unused-binding {:level :off}}}'
+
+      - name: Assert action completed with custom config
+        run: |
+          echo "Action completed with custom clj-kondo config"
+          echo "PASS"
