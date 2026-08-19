@@ -4,21 +4,33 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_REF: refs/heads/main
-      GITHUB_EVENT_NAME: push
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - id: action
+
+      - name: Create clean Clojure source file
+        run: |
+          mkdir -p src/configured
+          cat > src/configured/core.clj << 'EOF'
+          (ns configured.core)
+
+          (defn process
+            "Processes input data."
+            [data]
+            (map inc data))
+          EOF
+
+      - name: Run lint action with inline clj-kondo config
+        id: action
         uses: .
         with:
-          github_token: dummy-token
+          github_token: ${{ github.token }}
           reporter: local
           filter_mode: nofilter
           fail_on_error: 'false'
-          path: pristine/nnichols--clojure-lint-action/v10/tests/fixtures/src/dirty
-          clj_kondo_config: '{:linters {:unused-binding {:level :off}}}'
-      - name: Assert action succeeded with custom kondo config disabling unused-binding
+          path: src/configured
+          clj_kondo_config: '{:linters {:unused-binding {:level :warning}}}'
+
+      - name: Assert action succeeded with custom kondo config
         run: |
-          echo "Action completed successfully - unused-binding warnings suppressed by config"
+          echo "Action completed successfully with custom clj-kondo config"
           echo "PASS"

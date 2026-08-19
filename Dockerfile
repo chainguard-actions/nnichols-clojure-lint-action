@@ -4,7 +4,7 @@ FROM clojure:temurin-21-tools-deps-alpine@sha256:e7534968e364dd5457785a57d8e8e4b
 # https://github.com/reviewdog/reviewdog/blob/master/CHANGELOG.md#v0210---2025-09-03
 ENV REVIEWDOG_VERSION=v0.21.0
 
-RUN wget -O /tmp/install-reviewdog.sh -q https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh \
+RUN wget -O /tmp/install-reviewdog.sh -q https://raw.githubusercontent.com/reviewdog/reviewdog/${REVIEWDOG_VERSION}/install.sh \
     && sh /tmp/install-reviewdog.sh -b /usr/local/bin/ ${REVIEWDOG_VERSION} \
     && rm /tmp/install-reviewdog.sh
 

@@ -4,21 +4,39 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_REF: refs/heads/main
-      GITHUB_EVENT_NAME: push
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - id: action
+
+      - name: Create Clojure source files with different extensions
+        run: |
+          mkdir -p src/myapp
+          cat > src/myapp/core.clj << 'EOF'
+          (ns myapp.core)
+
+          (defn add
+            "Adds two numbers."
+            [a b]
+            (+ a b))
+          EOF
+          cat > src/myapp/util.cljs << 'EOF'
+          (ns myapp.util)
+
+          (defn greet [name]
+            (str "Hi " name))
+          EOF
+
+      - name: Run lint action with explicit .clj pattern
+        id: action
         uses: .
         with:
-          github_token: dummy-token
+          github_token: ${{ github.token }}
           reporter: local
           filter_mode: nofilter
           fail_on_error: 'false'
-          path: pristine/nnichols--clojure-lint-action/v10/tests/fixtures/src/clean
-          pattern: '*.cljs'
-      - name: Assert action succeeded with custom pattern
+          path: src
+          pattern: '*.clj'
+
+      - name: Assert action succeeded with pattern filter
         run: |
-          echo "Action completed successfully with custom .cljs pattern (no files matched)"
+          echo "Action completed successfully with custom pattern *.clj"
           echo "PASS"

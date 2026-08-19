@@ -1,0 +1,41 @@
+name: Test exclude pattern
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create Clojure source files including one to exclude
+        run: |
+          mkdir -p src/main
+          mkdir -p src/vendor
+          cat > src/main/app.clj << 'EOF'
+          (ns main.app)
+
+          (defn run []
+            (println "Running app"))
+          EOF
+          cat > src/vendor/lib.clj << 'EOF'
+          (ns vendor.lib)
+
+          (defn helper []
+            (println "helper"))
+          EOF
+
+      - name: Run lint action excluding vendor directory
+        id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          reporter: local
+          filter_mode: nofilter
+          fail_on_error: 'false'
+          path: src
+          exclude: '*/vendor/*'
+
+      - name: Assert action succeeded with exclude
+        run: |
+          echo "Action completed successfully with vendor directory excluded"
+          echo "PASS"

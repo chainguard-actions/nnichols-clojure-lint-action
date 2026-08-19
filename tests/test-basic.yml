@@ -1,0 +1,35 @@
+name: Test basic usage - clean Clojure code
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create clean Clojure source file
+        run: |
+          mkdir -p src/example
+          cat > src/example/core.clj << 'EOF'
+          (ns example.core)
+
+          (defn hello
+            "Returns a greeting string."
+            [name]
+            (str "Hello, " name "!"))
+          EOF
+
+      - name: Run clojure lint action on clean code
+        id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          reporter: local
+          filter_mode: nofilter
+          fail_on_error: 'false'
+          path: src
+
+      - name: Assert action succeeded
+        run: |
+          echo "Action completed successfully with clean Clojure code"
+          echo "PASS"

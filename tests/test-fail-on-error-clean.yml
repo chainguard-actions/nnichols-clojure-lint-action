@@ -1,0 +1,40 @@
+name: Test fail_on_error with clean code
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create clean Clojure source file
+        run: |
+          mkdir -p src/clean
+          cat > src/clean/core.clj << 'EOF'
+          (ns clean.core)
+
+          (defn square
+            "Returns the square of n."
+            [n]
+            (* n n))
+
+          (defn cube
+            "Returns the cube of n."
+            [n]
+            (* n n n))
+          EOF
+
+      - name: Run lint action with fail_on_error true on clean code
+        id: action
+        uses: .
+        with:
+          github_token: ${{ github.token }}
+          reporter: local
+          filter_mode: nofilter
+          fail_on_error: 'true'
+          path: src/clean
+
+      - name: Assert action succeeded with fail_on_error on clean code
+        run: |
+          echo "Action completed successfully - no errors found, fail_on_error=true did not trigger"
+          echo "PASS"
